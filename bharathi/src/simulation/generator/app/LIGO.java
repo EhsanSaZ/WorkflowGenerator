@@ -69,7 +69,7 @@ public class LIGO extends AbstractApplication {
                     break;
                 case 'f':
                     factor = Double.parseDouble(g.getOptarg());
-                    this.runtimeFactor = factor / generateDouble("TmpltBank_mean");
+                    this.runtimeFactor = factor / generateDouble("TmltBank_mean");
                     break;
                 case 'h':
                     usage(0);
