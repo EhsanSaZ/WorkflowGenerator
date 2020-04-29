@@ -15,8 +15,8 @@ public class ShapeFactory {
         map.put(Shape.DIVIDE, new Divide());
         map.put(Shape.DIVIDE_AND_CONQUER, new DivideAndConquer());
         map.put(Shape.HOURGLASS, new HourGlass());
-        map.put("MIRROR_HOURGLASS", new MirrorHourGlass());
-        map.put("CONSTANT", new Constant());
+        map.put(Shape.MIRROR_HOURGLASS, new MirrorHourGlass());
+        map.put(Shape.CONSTANT, new Constant());
     }
 
     public static Shape getShape(String shape) throws Exception {
