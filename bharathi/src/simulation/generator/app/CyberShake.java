@@ -238,6 +238,7 @@ class ExtractSGT extends AppJob {
 
         double runtime = cybershake.generateDouble("ExtractSGT") * cybershake.getRuntimeFactor();
         addAnnotation("runtime", String.format("%.2f", runtime));
+        // TODO ADD PROPER MEMORY DEMAND  FOR THIS JOB HERE
     }
 
     public void addChild(AppJob child) {
@@ -279,6 +280,7 @@ class SeismogramSynthesis extends AppJob {
 
         double runtime = cybershake.generateDouble("SeismogramSynthesis") * cybershake.getRuntimeFactor();
         addAnnotation("runtime", String.format("%.2f", runtime));
+        // TODO ADD PROPER MEMORY DEMAND  FOR THIS JOB HERE
     }
 
     @Override
@@ -293,6 +295,7 @@ class PeakValCalcOkaya extends AppJob {
 
         double runtime = cybershake.generateDouble("PeakValCalcOkaya") * cybershake.getRuntimeFactor();
         addAnnotation("runtime", String.format("%.2f", runtime * cybershake.getRuntimeFactor()));
+        // TODO ADD PROPER MEMORY DEMAND  FOR THIS JOB HERE
     }
 
     @Override
@@ -328,6 +331,7 @@ class ZipSeis extends AppJob {
         output("Cybershake_Seismograms.zip", zipSize);
         double runtime = zipSize * ((CyberShake) getApp()).getRuntimeFactor() / ((CyberShake) getApp()).generateDouble("ZipSeis_rate");
         addAnnotation("runtime", String.format("%.2f", runtime));
+        // TODO ADD PROPER MEMORY DEMAND  FOR THIS JOB HERE
     }
 }
 
@@ -348,5 +352,6 @@ class ZipPSA extends AppJob {
 
         double runtime = zipSize * ((CyberShake) getApp()).getRuntimeFactor() / ((CyberShake) getApp()).generateDouble("ZipPSA_rate");
         addAnnotation("runtime", String.format("%.2f", runtime));
+        // TODO ADD PROPER MEMORY DEMAND  FOR THIS JOB HERE
     }
 }
