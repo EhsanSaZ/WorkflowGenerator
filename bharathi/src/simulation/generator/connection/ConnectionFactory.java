@@ -14,8 +14,8 @@ public class ConnectionFactory {
         map.put(Connection.DENSE, new Dense());
         map.put(Connection.MODERATE, new Moderate());
         map.put(Connection.SPARSE, new Sparse());
-        map.put("MIN", new Min());
-        map.put("MAX", new Max());
+        map.put(Connection.MIN, new Min());
+        map.put(Connection.MAX, new Max());
     }
 
     public static Connection getConnection(String connection)
