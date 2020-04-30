@@ -220,6 +220,8 @@ public class CyberShake extends AbstractApplication {
         this.distributions.put("PeakValCalcOkaya", Distribution.getTruncatedNormalDistribution(1.09, 3.71));
         this.distributions.put("ZipSeis_rate", Distribution.getConstantDistribution(228180.52));
         this.distributions.put("ZipPSA_rate", Distribution.getConstantDistribution(2782.00));
+
+        // TODO ADD REQUIRED DISTRIBUTIONS FOR MEMORY DEMAND HERE
     }
 }
 

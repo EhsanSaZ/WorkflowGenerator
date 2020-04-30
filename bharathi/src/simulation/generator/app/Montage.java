@@ -299,6 +299,8 @@ public class Montage extends AbstractApplication {
         this.distributions.put("mShrink", Distribution.getTruncatedNormalDistribution(12.21, 0.00));
 
         this.distributions.put("mJPEG_rate", Distribution.getTruncatedNormalDistribution(549291.00, 3933630100.67));
+
+        // TODO ADD REQUIRED DISTRIBUTIONS FOR MEMORY DEMAND HERE
     }
 }
 

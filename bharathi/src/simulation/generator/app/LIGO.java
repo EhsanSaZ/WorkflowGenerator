@@ -336,6 +336,8 @@ public class LIGO extends AbstractApplication {
         this.distributions.put("Inspiral", Distribution.getTruncatedNormalDistribution(460.21, 297397.45));
         this.distributions.put("Thinca", Distribution.getTruncatedNormalDistribution(5.37, 0.06));
         this.distributions.put("TrigBank", Distribution.getTruncatedNormalDistribution(5.11, 0.1));
+
+        // TODO ADD REQUIRED DISTRIBUTIONS FOR MEMORY DEMAND HERE
     }
 }
 
@@ -368,6 +370,7 @@ class TmpltBank extends AppJob {
         double runtime = ligo.generateDouble("TmpltBank") * ligo.getRuntimeFactor();
         addAnnotation("runtime",
                 String.format("%.2f", runtime));
+        // TODO ADD PROPER MEMORY DEMAND  FOR THIS JOB HERE
     }
 
     public void addInputs(Set<AppFilename> inputs) {
@@ -399,6 +402,7 @@ class Inspiral extends AppJob {
         double runtime = ligo.generateDouble("Inspiral") * ligo.getRuntimeFactor();
         addAnnotation("runtime",
                 String.format("%.2f", runtime));
+        // TODO ADD PROPER MEMORY DEMAND  FOR THIS JOB HERE
     }
 
     public void addInputs(Set<AppFilename> inputs) {
@@ -430,6 +434,7 @@ class Thinca extends AppJob {
         double runtime = ligo.generateDouble("Thinca") * ligo.getRuntimeFactor();
         addAnnotation("runtime",
                 String.format("%.2f", runtime));
+        // TODO ADD PROPER MEMORY DEMAND  FOR THIS JOB HERE
     }
 
     private void generateOutput(AppJob child) {
@@ -474,6 +479,7 @@ class TrigBank extends AppJob {
         double runtime = ligo.generateDouble("TrigBank") * ligo.getRuntimeFactor();
         addAnnotation("runtime",
                 String.format("%.2f", runtime * ligo.getRuntimeFactor()));
+        // TODO ADD PROPER MEMORY DEMAND  FOR THIS JOB HERE
     }
 
     @Override
