@@ -316,6 +316,7 @@ class MProjectPP extends AppJob {
         double runtime = montage.generateDouble("mProjectPP");
         addAnnotation("runtime",
                 String.format("%.2f", runtime * montage.getRuntimeFactor()));
+        // TODO ADD PROPER MEMORY DEMAND  FOR THIS JOB HERE
     }
 
     @Override
@@ -335,6 +336,7 @@ class MDiffFit extends AppJob {
         double runtime = montage.generateDouble("mDiffFit");
         addAnnotation("runtime",
                 String.format("%.2f", runtime * montage.getRuntimeFactor()));
+        // TODO ADD PROPER MEMORY DEMAND  FOR THIS JOB HERE
     }
 
     @Override
@@ -355,6 +357,7 @@ class MConcatFit extends AppJob {
         input("fits_list.tbl", fitsListSize);
         double runtime = montage.generateDouble("mConcatFit_base") * montage.getNumDiff() * montage.getRuntimeFactor();
         addAnnotation("runtime", String.format("%.2f", runtime));
+        // TODO ADD PROPER MEMORY DEMAND  FOR THIS JOB HERE
     }
 
     @Override
@@ -374,6 +377,7 @@ class MBgModel extends AppJob {
 
         double runtime = montage.generateDouble("mBgModel_base") * montage.getNumDiff() * montage.getRuntimeFactor();
         addAnnotation("runtime", String.format("%.2f", runtime));
+        // TODO ADD PROPER MEMORY DEMAND  FOR THIS JOB HERE
     }
 
     @Override
@@ -392,6 +396,7 @@ class MBackground extends AppJob {
         double runtime = montage.generateDouble("mBackground");
         addAnnotation("runtime",
                 String.format("%.2f", runtime * montage.getRuntimeFactor()));
+        // TODO ADD PROPER MEMORY DEMAND  FOR THIS JOB HERE
     }
 
     @Override
@@ -418,6 +423,7 @@ class MImgTbl extends AppJob {
 
         double runtime = montage.generateDouble("mImgTbl_base") * montage.getNumProj() * montage.getRuntimeFactor();
         addAnnotation("runtime", String.format("%.2f", runtime));
+        // TODO ADD PROPER MEMORY DEMAND  FOR THIS JOB HERE
     }
 
     @Override
@@ -437,6 +443,7 @@ class MAdd extends AppJob {
 
         double runtime = montage.generateDouble("mAdd") * montage.getDegree() * montage.getDegree();
         addAnnotation("runtime", String.format("%.2f", runtime * montage.getRuntimeFactor()));
+        // TODO ADD PROPER MEMORY DEMAND  FOR THIS JOB HERE
         input("region.hdr", montage.generateLong("region.hdr"));
         this.jobID = jobID;
 
@@ -461,6 +468,7 @@ class MShrink extends AppJob {
 
         double runtime = montage.generateDouble("mShrink") * montage.getDegree();
         addAnnotation("runtime", String.format("%.2f", runtime * montage.getRuntimeFactor()));
+        // TODO ADD PROPER MEMORY DEMAND  FOR THIS JOB HERE
         this.jobID = jobID;
     }
 
@@ -500,6 +508,7 @@ class MJPEG extends AppJob {
 
                 double runtime = jpgSize / ((Montage) getApp()).generateDouble("mJPEG_rate");
                 addAnnotation("runtime", String.format("%.2f", runtime * ((Montage) getApp()).getRuntimeFactor()));
+                // TODO ADD PROPER MEMORY DEMAND  FOR THIS JOB HERE
                 break;
             }
         }
