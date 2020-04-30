@@ -335,6 +335,8 @@ public class Genome extends AbstractApplication {
         this.distributions.put("maqIndex_rate", Distribution.getTruncatedNormalDistribution(17679204.35, 22320561695167.98));
         this.distributions.put("pileup_factor", Distribution.getUniformDistribution(0.0, 10.0));
         this.distributions.put("pileup_rate", Distribution.getTruncatedNormalDistribution(881356.45, 8956444331.45));
+
+        // TODO ADD REQUIRED DISTRIBUTIONS FOR MEMORY DEMAND HERE
     }
 }
 
@@ -358,6 +360,7 @@ class FastQSplit extends AppJob {
         double runtime = size / rate;
         addAnnotation("runtime", String.format("%.2f",
                 runtime * genome.getRuntimeFactor()));
+        // TODO ADD PROPER MEMORY DEMAND  FOR THIS JOB HERE
     }
 
     @Override
@@ -396,6 +399,7 @@ class FilterContams extends AppJob {
 
         double runtime = in.getSize() / ((Genome) getApp()).generateDouble("filterContams_rate");
         addAnnotation("runtime", String.format("%.2f", runtime * ((Genome) getApp()).getRuntimeFactor()));
+        // TODO ADD PROPER MEMORY DEMAND  FOR THIS JOB HERE
     }
 }
 
@@ -420,6 +424,7 @@ class Sol2Sanger extends AppJob {
 
         double runtime = in.getSize() / ((Genome) getApp()).generateDouble("sol2sanger_rate");
         addAnnotation("runtime", String.format("%.2f", runtime * ((Genome) getApp()).getRuntimeFactor()));
+        // TODO ADD PROPER MEMORY DEMAND  FOR THIS JOB HERE
     }
 }
 
@@ -445,6 +450,7 @@ class Fast2Bfq extends AppJob {
 
         double runtime = in.getSize() / ((Genome) getApp()).generateDouble("fast2bfq_rate");
         addAnnotation("runtime", String.format("%.2f", runtime * ((Genome) getApp()).getRuntimeFactor()));
+        // TODO ADD PROPER MEMORY DEMAND  FOR THIS JOB HERE
     }
 }
 
@@ -477,6 +483,7 @@ class MaqMap extends AppJob {
         double runtime = ((Genome) getApp()).getReferenceSize() / ((Genome) getApp()).generateDouble("maqmap_rate");
 
         addAnnotation("runtime", String.format("%.2f", runtime * ((Genome) getApp()).getRuntimeFactor()));
+        // TODO ADD PROPER MEMORY DEMAND  FOR THIS JOB HERE
     }
 }
 
@@ -509,6 +516,7 @@ class MapMerge extends AppJob {
 
         double runtime = totalSize / ((Genome) getApp()).generateDouble("mapMerge_rate");
         addAnnotation("runtime", String.format("%.2f", runtime * ((Genome) getApp()).getRuntimeFactor()));
+        // TODO ADD PROPER MEMORY DEMAND  FOR THIS JOB HERE
     }
 }
 
@@ -534,6 +542,7 @@ class MaqIndex extends AppJob {
 
         double runtime = size / ((Genome) getApp()).generateDouble("maqIndex_rate");
         addAnnotation("runtime", String.format("%.2f", runtime * ((Genome) getApp()).getRuntimeFactor()));
+        // TODO ADD PROPER MEMORY DEMAND  FOR THIS JOB HERE
     }
 }
 
@@ -564,5 +573,6 @@ class PileUp extends AppJob {
 
         double runtime = ((Genome) getApp()).getReferenceSize() / ((Genome) getApp()).generateDouble("pileup_rate");
         addAnnotation("runtime", String.format("%.2f", runtime * ((Genome) getApp()).getRuntimeFactor()));
+        // TODO ADD PROPER MEMORY DEMAND  FOR THIS JOB HERE
     }
 }
