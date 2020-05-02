@@ -18,6 +18,7 @@ public class SIPHT extends AbstractApplication {
     private static final int MEAN_PATSERS = 18;
     private int PARTNER_FACTOR = 936;
     private double runtimeFactor = 1.0;
+    private double peak_memoryFactor = 1;
     private int numJobs;
 
     protected void populateDistributions() {
@@ -121,6 +122,10 @@ public class SIPHT extends AbstractApplication {
 
         this.distributions.put("CODE_paralogues.txt", Distribution.getTruncatedNormalDistribution(690731.5, 362706549090.75));
 
+        /*
+         * Runtime stuff
+         * from paper ???
+         */
         this.distributions.put("Findterm", Distribution.getTruncatedNormalDistribution(1349.47, 635206.26));
         this.distributions.put("Findterm_mean", Distribution.getConstantDistribution(1349.47));
         this.distributions.put("Transterm", Distribution.getTruncatedNormalDistribution(55.78, 2356.11));
@@ -136,14 +141,32 @@ public class SIPHT extends AbstractApplication {
         this.distributions.put("SRNA_annotate", Distribution.getTruncatedNormalDistribution(1.68, 0.92));
         this.distributions.put("Blast_synteny", Distribution.getConstantDistribution(33.0));
 
-        // TODO ADD REQUIRED DISTRIBUTIONS FOR MEMORY DEMAND HERE
+        /*
+         * Memory stuff
+         * from paper Characterizing and profiling scientific workflows
+         */
+        this.distributions.put("Findterm_memory", Distribution.getTruncatedNormalDistribution(0, 0));
+        this.distributions.put("Findterm_mean_memory", Distribution.getConstantDistribution(0));
+        this.distributions.put("RNAMotif_memory", Distribution.getTruncatedNormalDistribution(0, 0));
+        this.distributions.put("Transterm_memory", Distribution.getTruncatedNormalDistribution(0, 0));
+        this.distributions.put("Blast_memory", Distribution.getTruncatedNormalDistribution(0, 0));
+        this.distributions.put("Patser_memory", Distribution.getTruncatedNormalDistribution(0, 0));
+        this.distributions.put("Patser_concate_memory", Distribution.getTruncatedNormalDistribution(0, 0));
+        this.distributions.put("SRNA_memory", Distribution.getTruncatedNormalDistribution(0, 0));
+        this.distributions.put("FFN_parse_memory", Distribution.getTruncatedNormalDistribution(0, 0));
+        this.distributions.put("Blast_candidate_memory", Distribution.getTruncatedNormalDistribution(0, 0));
+        this.distributions.put("Blast_QRNA_memory", Distribution.getTruncatedNormalDistribution(0, 0));
+        this.distributions.put("Blast_synteny_memory", Distribution.getConstantDistribution(0));
+        this.distributions.put("SRNA_annotate_memory", Distribution.getTruncatedNormalDistribution(0, 0));
+        this.distributions.put("Blast_paralogues_memory", Distribution.getTruncatedNormalDistribution(0, 0));
     }
 
     private void usage(int exitCode) {
         String msg = "SIPHT [-h] [options]" +
                 "\n--factor | -f Avg. runtime to execute an Blast_candidate job" +
                 "\n--help | -h Print help message." +
-                "\n--numjobs | -n Number of jobs.";
+                "\n--numjobs | -n Number of jobs." +
+                "\n--memory | -m Avg. peak memory to execute a Findterm job.";
 
         System.out.println(msg);
         System.exit(exitCode);
@@ -152,20 +175,23 @@ public class SIPHT extends AbstractApplication {
     public double getRuntimeFactor() {
         return this.runtimeFactor;
     }
+    public  double getPeak_memoryFactor() { return this.peak_memoryFactor; }
 
     @Override
     protected void processArgs(String[] args) {
         int c;
-        LongOpt[] longopts = new LongOpt[3];
+        LongOpt[] longopts = new LongOpt[4];
 
         longopts[0] = new LongOpt("factor", LongOpt.REQUIRED_ARGUMENT, null, 'f');
         longopts[1] = new LongOpt("help", LongOpt.NO_ARGUMENT, null, 'h');
         longopts[2] = new LongOpt("num-jobs", LongOpt.REQUIRED_ARGUMENT, null, 'n');
+        longopts[3] = new LongOpt("memory", LongOpt.REQUIRED_ARGUMENT, null, 'm');
 
-        Getopt g = new Getopt("SIPHT", args, "f:hn:", longopts);
+        Getopt g = new Getopt("SIPHT", args, "f:hn:m:", longopts);
         g.setOpterr(false);
         
         double factor = 1.0;
+        double memory_factor = 1.0;
         int numJobs = 0;
 
         while ((c = g.getopt()) != -1) {
@@ -179,6 +205,10 @@ public class SIPHT extends AbstractApplication {
                     break;
                 case 'n':
                     numJobs = Integer.parseInt(g.getOptarg());
+                    break;
+                case 'm':
+                    memory_factor = Double.parseDouble(g.getOptarg());
+                    this.peak_memoryFactor = memory_factor / generateDouble("Findterm_mean_memory");
                     break;
                 default:
                     usage(1);
@@ -261,7 +291,7 @@ class Findterm extends AppJob {
         input(SIPHT.CODE + ".fna", sipht.generateLong("CODE.fna"));
         input("RNAfold", sipht.generateLong("RNAfold"));
         addAnnotation("runtime", String.format("%.4f", sipht.generateDouble("Findterm") * sipht.getRuntimeFactor()));
-        // TODO ADD PROPER MEMORY DEMAND  FOR THIS JOB HERE
+        addAnnotation("peak_memory", String.format("%.4f", sipht.generateDouble("Findterm_memory") * sipht.getPeak_memoryFactor()));
     }
 
     public void addChild(AppJob child) {
@@ -285,7 +315,7 @@ class RNAMotif extends AppJob {
         input(SIPHT.CODE + ".fna", sipht.generateLong("CODE.fna"));
         input("RNAMofficial_descriptor.txt", sipht.generateLong("RNAMofficial_descriptor.txt"));
         addAnnotation("runtime", String.format("%.4f", sipht.generateDouble("RNAMotif") * sipht.getRuntimeFactor()));
-        // TODO ADD PROPER MEMORY DEMAND  FOR THIS JOB HERE
+        addAnnotation("peak_memory", String.format("%.4f", sipht.generateDouble("RNAMotif_memory") * sipht.getPeak_memoryFactor()));
     }
 
     public void addChild(AppJob child) {
@@ -304,7 +334,8 @@ class Transterm extends AppJob {
         input("expterm.dat", sipht.generateLong("expterm.dat"));
         input(SIPHT.CODE + ".ptt", sipht.generateLong("CODE.ptt"));
         addAnnotation("runtime", String.format("%.4f", sipht.generateDouble("Transterm") * sipht.getRuntimeFactor()));
-        // TODO ADD PROPER MEMORY DEMAND  FOR THIS JOB HERE
+        addAnnotation("peak_memory", String.format("%.4f", sipht.generateDouble("Transterm_memory") * sipht.getPeak_memoryFactor()));
+
     }
 
     public void addChild(AppJob child) {
@@ -334,7 +365,8 @@ class Blast extends AppJob {
         output("blast.err", sipht.generateLong("blast.err"));
 
         addAnnotation("runtime", String.format("%.4f", sipht.generateDouble("Blast") * sipht.getRuntimeFactor()));
-        // TODO ADD PROPER MEMORY DEMAND  FOR THIS JOB HERE
+        addAnnotation("peak_memory", String.format("%.4f", sipht.generateDouble("Blast_memory") * sipht.getPeak_memoryFactor()));
+
     }
 
     public void addChild(AppJob child) {
@@ -357,7 +389,7 @@ class Patser extends AppJob {
         input("alphabet", sipht.generateLong("alphabet"));
         input(jobID + "_matrix.txt", sipht.generateLong("matrix"));
         addAnnotation("runtime", String.format("%.4f", sipht.generateDouble("Patser") * sipht.getRuntimeFactor()));
-        // TODO ADD PROPER MEMORY DEMAND  FOR THIS JOB HERE
+        addAnnotation("peak_memory", String.format("%.4f", sipht.generateDouble("Patser_memory") * sipht.getPeak_memoryFactor()));
     }
 
     public void addChild(AppJob child) {
@@ -372,7 +404,7 @@ class PatserConcate extends AppJob {
     public PatserConcate(SIPHT sipht, String name, String version, String jobID) {
         super(sipht, SIPHT.NAMESPACE, name, version, jobID);
         addAnnotation("runtime", String.format("%.4f", sipht.generateDouble("Patser_concate") * sipht.getRuntimeFactor()));
-        // TODO ADD PROPER MEMORY DEMAND  FOR THIS JOB HERE
+        addAnnotation("peak_memory", String.format("%.4f", sipht.generateDouble("Patser_concate_memory") * sipht.getPeak_memoryFactor()));
     }
 
     public void addChild(AppJob child) {
@@ -409,7 +441,7 @@ class SRNA extends AppJob {
         output("OutTerms", sipht.generateLong("OutTerms"));
         output("OutTermsIG", sipht.generateLong("OutTermsIG"));
         addAnnotation("runtime", String.format("%.4f", sipht.generateDouble("SRNA") * sipht.getRuntimeFactor()));
-        // TODO ADD PROPER MEMORY DEMAND  FOR THIS JOB HERE
+        addAnnotation("peak_memory", String.format("%.4f", sipht.generateDouble("SRNA_memory") * sipht.getPeak_memoryFactor()));
     }
 
     public void addChild(AppJob child) {
@@ -428,7 +460,7 @@ class FFNParse extends AppJob {
         input(SIPHT.CODE + ".ptt", sipht.generateLong("CODE.ptt"));
         input("Seq_" + SIPHT.CODE, sipht.generateLong("Seq_CODE"));
         addAnnotation("runtime", String.format("%.4f", sipht.generateDouble("FFN_parse") * sipht.getRuntimeFactor()));
-        // TODO ADD PROPER MEMORY DEMAND  FOR THIS JOB HERE
+        addAnnotation("peak_memory", String.format("%.4f", sipht.generateDouble("FFN_parse_memory") * sipht.getPeak_memoryFactor()));
     }
 
     public void addChild(AppJob child) {
@@ -446,7 +478,7 @@ class BlastCandidate extends AppJob {
         input("xdformat", sipht.generateLong("xdformat"));
         input("time", sipht.generateLong("time"));
         addAnnotation("runtime", String.format("%.4f", sipht.generateDouble("Blast_candidate") * sipht.getRuntimeFactor()));
-        // TODO ADD PROPER MEMORY DEMAND  FOR THIS JOB HERE
+        addAnnotation("peak_memory", String.format("%.4f", sipht.generateDouble("Blast_candidate_memory") * sipht.getPeak_memoryFactor()));
     }
 
     public void addChild(AppJob child) {
@@ -487,7 +519,7 @@ class BlastQRNA extends AppJob {
         output(SIPHT.CODE + "_QRNAblast.txt.E0.01.D1.q.rep", sipht.generateLong("CODE_QRNAblast.txt.E0.01.D1.q.rep"));
 
         addAnnotation("runtime", String.format("%.4f", sipht.generateDouble("Blast_QRNA") * sipht.getRuntimeFactor()));
-        // TODO ADD PROPER MEMORY DEMAND  FOR THIS JOB HERE
+        addAnnotation("peak_memory", String.format("%.4f", sipht.generateDouble("Blast_QRNA_memory") * sipht.getPeak_memoryFactor()));
     }
 
     public void addChild(AppJob child) {
@@ -506,7 +538,7 @@ class BlastSynteny extends AppJob {
         input("time", sipht.generateLong("time"));
 
         addAnnotation("runtime", String.format("%.4f", sipht.generateDouble("Blast_synteny") * sipht.getRuntimeFactor()));
-        // TODO ADD PROPER MEMORY DEMAND  FOR THIS JOB HERE
+        addAnnotation("peak_memory", String.format("%.4f", sipht.generateDouble("Blast_synteny_memory") * sipht.getPeak_memoryFactor()));
     }
 
     public void addChild(AppJob child) {
@@ -529,7 +561,7 @@ class SRNAAnnotate extends AppJob {
         output("srna_annotate.err", sipht.generateLong("srna_annotate.err"));
         output("srna_annotate.out", sipht.generateLong("srna_annotate.out"));
         addAnnotation("runtime", String.format("%.4f", sipht.generateDouble("SRNA_annotate") * sipht.getRuntimeFactor()));
-        // TODO ADD PROPER MEMORY DEMAND  FOR THIS JOB HERE
+        addAnnotation("peak_memory", String.format("%.4f", sipht.generateDouble("SRNA_annotate_memory") * sipht.getPeak_memoryFactor()));
     }
 
     public void addChild(AppJob child) {
@@ -546,7 +578,7 @@ class BlastParalogues extends AppJob {
         input("blasta", sipht.generateLong("blasta"));
         input("time", sipht.generateLong("time"));
         addAnnotation("runtime", String.format("%.4f", sipht.generateDouble("Blast_paralogues") * sipht.getRuntimeFactor()));
-        // TODO ADD PROPER MEMORY DEMAND  FOR THIS JOB HERE
+        addAnnotation("peak_memory", String.format("%.4f", sipht.generateDouble("Blast_paralogues_memory") * sipht.getPeak_memoryFactor()));
     }
 
     public void addChild(AppJob child) {
