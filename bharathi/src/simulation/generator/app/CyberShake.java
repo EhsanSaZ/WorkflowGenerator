@@ -22,6 +22,7 @@ public class CyberShake extends AbstractApplication {
     private static final double EXTRACT_SGT_FACTOR = 0.0081;
 //    public static final double DEFAULT_FACTOR = SeismogramSynthesis.MEAN_RUNTIME;
     private double runtimeFactor = 1;
+    private double peak_memoryFactor = 1;
 
     public enum SITE {
         CCP, DLA, FFI, LADT, LBP, PAS, SABD, SBSM, SMCA, USC, WNGC
@@ -40,7 +41,8 @@ public class CyberShake extends AbstractApplication {
                 "\n--numjobs | -n Number of jobs." +
                 "\n--ruptures | -r Number of ruptures." +
                 "\n--site | -s Generate workflow for specified site." +
-                "\n--variations | -m Maximum number of variations for any rupture." +
+                "\n--variations | -v Maximum number of variations for any rupture." +
+                "\n--memory | -m Avg. peak memory to execute a TmpltBank job." +
                 "\n\nOne of the following combinations is required:" +
                 "\n-d or" +
                 "\n-r,-v or" +
@@ -53,11 +55,12 @@ public class CyberShake extends AbstractApplication {
     public double getRuntimeFactor() {
         return this.runtimeFactor;
     }
+    public  double getPeak_memoryFactor() { return this.peak_memoryFactor; }
 
     @Override
     protected void processArgs(String[] args) {
         int c;
-        LongOpt[] longopts = new LongOpt[7];
+        LongOpt[] longopts = new LongOpt[8];
 
         longopts[0] = new LongOpt("data", LongOpt.REQUIRED_ARGUMENT, null, 'd');
         longopts[1] = new LongOpt("factor", LongOpt.REQUIRED_ARGUMENT, null, 'f');
@@ -66,10 +69,10 @@ public class CyberShake extends AbstractApplication {
         longopts[3] = new LongOpt("num-jobs", LongOpt.REQUIRED_ARGUMENT, null, 'n');
         longopts[4] = new LongOpt("ruptures", LongOpt.REQUIRED_ARGUMENT, null, 'r');
         longopts[5] = new LongOpt("site", LongOpt.REQUIRED_ARGUMENT, null, 's');
-        longopts[6] = new LongOpt("variations", LongOpt.REQUIRED_ARGUMENT,
-                null, 'v');
+        longopts[6] = new LongOpt("variations", LongOpt.REQUIRED_ARGUMENT, null, 'v');
+        longopts[7] = new LongOpt("memory", LongOpt.REQUIRED_ARGUMENT, null, 'm');
 
-        Getopt g = new Getopt("CyberShake", args, "d:f:hn:r:s:v:", longopts);
+        Getopt g = new Getopt("CyberShake", args, "d:f:hn:r:s:v:m:", longopts);
         g.setOpterr(false);
 
         int numJobs = 0;
@@ -77,6 +80,8 @@ public class CyberShake extends AbstractApplication {
         int ruptures = MAX_RUPTURES;
         SITE site = null;
         long data = 0;
+        double factor = 1.0;
+        double memory_factor = 1.0;
 
         while ((c = g.getopt()) != -1) {
             switch (c) {
@@ -84,12 +89,13 @@ public class CyberShake extends AbstractApplication {
                     data = Long.parseLong(g.getOptarg());
                     break;
                 case 'f':
-                    this.runtimeFactor = Double.parseDouble(g.getOptarg());
+                    factor = Double.parseDouble(g.getOptarg());
+                    this.runtimeFactor = factor / generateDouble("SeismogramSynthesis");
                     break;
                 case 'h':
                     usage(0);
                     break;
-                case 'm':
+                case 'v':
                     variations = Integer.parseInt(g.getOptarg());
                     break;
                 case 'n':
@@ -101,7 +107,10 @@ public class CyberShake extends AbstractApplication {
                 case 's':
                     site = SITE.valueOf(g.getOptarg());
                     break;
-
+                case 'm':
+                    memory_factor = Double.parseDouble(g.getOptarg());
+                    this.peak_memoryFactor = memory_factor / generateDouble("SeismogramSynthesis_memory");
+                    break;
                 default:
                     usage(1);
             }
@@ -213,7 +222,7 @@ public class CyberShake extends AbstractApplication {
         this.distributions.put("ZipPSA_factor", Distribution.getConstantDistribution(6));
 
         /*
-         * Runtime distributions.
+         * Runtime distributions from ???
          */
         this.distributions.put("ExtractSGT", Distribution.getTruncatedNormalDistribution(137.45, 42681.27));
         this.distributions.put("SeismogramSynthesis", Distribution.getTruncatedNormalDistribution(43.40, 984.36));
@@ -221,7 +230,19 @@ public class CyberShake extends AbstractApplication {
         this.distributions.put("ZipSeis_rate", Distribution.getConstantDistribution(228180.52));
         this.distributions.put("ZipPSA_rate", Distribution.getConstantDistribution(2782.00));
 
+        /*
+         * Memory stuff
+         * from paper Characterizing and profiling scientific workflows
+         */
         // TODO ADD REQUIRED DISTRIBUTIONS FOR MEMORY DEMAND HERE
+        // TODO USE A PROPER MEMORY DIST FOR ZIP TASKS
+        this.distributions.put("ExtractSGT_memory", Distribution.getTruncatedNormalDistribution(0, 0));
+        this.distributions.put("SeismogramSynthesis_memory", Distribution.getTruncatedNormalDistribution(0, 0));
+        this.distributions.put("PeakValCalcOkaya_memory", Distribution.getTruncatedNormalDistribution(0, 0));
+//        this.distributions.put("ZipSeis_rate_memory", Distribution.getConstantDistribution(0));
+//        this.distributions.put("ZipPSA_rate_memory", Distribution.getConstantDistribution(0));
+        this.distributions.put("ZipSeis_rate_memory", Distribution.getTruncatedNormalDistribution(0, 0));
+        this.distributions.put("ZipPSA_rate_memory",  Distribution.getTruncatedNormalDistribution(0, 0));
     }
 }
 
@@ -240,7 +261,8 @@ class ExtractSGT extends AppJob {
 
         double runtime = cybershake.generateDouble("ExtractSGT") * cybershake.getRuntimeFactor();
         addAnnotation("runtime", String.format("%.2f", runtime));
-        // TODO ADD PROPER MEMORY DEMAND  FOR THIS JOB HERE
+        double peak_memory = cybershake.generateDouble("ExtractSGT_memory") * cybershake.getPeak_memoryFactor();
+        addAnnotation("peak_memory", String.format("%.2f", peak_memory));
     }
 
     public void addChild(AppJob child) {
@@ -282,7 +304,8 @@ class SeismogramSynthesis extends AppJob {
 
         double runtime = cybershake.generateDouble("SeismogramSynthesis") * cybershake.getRuntimeFactor();
         addAnnotation("runtime", String.format("%.2f", runtime));
-        // TODO ADD PROPER MEMORY DEMAND  FOR THIS JOB HERE
+        double peak_memory = cybershake.generateDouble("SeismogramSynthesis_memory") * cybershake.getPeak_memoryFactor();
+        addAnnotation("peak_memory", String.format("%.2f", peak_memory));
     }
 
     @Override
@@ -297,7 +320,8 @@ class PeakValCalcOkaya extends AppJob {
 
         double runtime = cybershake.generateDouble("PeakValCalcOkaya") * cybershake.getRuntimeFactor();
         addAnnotation("runtime", String.format("%.2f", runtime * cybershake.getRuntimeFactor()));
-        // TODO ADD PROPER MEMORY DEMAND  FOR THIS JOB HERE
+        double peak_memory = cybershake.generateDouble("PeakValCalcOkaya_memory") * cybershake.getPeak_memoryFactor();
+        addAnnotation("peak_memory", String.format("%.2f", peak_memory));
     }
 
     @Override
@@ -333,7 +357,9 @@ class ZipSeis extends AppJob {
         output("Cybershake_Seismograms.zip", zipSize);
         double runtime = zipSize * ((CyberShake) getApp()).getRuntimeFactor() / ((CyberShake) getApp()).generateDouble("ZipSeis_rate");
         addAnnotation("runtime", String.format("%.2f", runtime));
-        // TODO ADD PROPER MEMORY DEMAND  FOR THIS JOB HERE
+        // TODO GENERATE MEMORY DEMAND IN A BETTER WAY / ACCORDING TO INPUT SIZE
+        double peak_memory =((CyberShake) getApp()).generateDouble("ZipSeis_rate_memory") * ((CyberShake) getApp()).getPeak_memoryFactor();
+        addAnnotation("peak_memory", String.format("%.2f", peak_memory));
     }
 }
 
@@ -354,6 +380,8 @@ class ZipPSA extends AppJob {
 
         double runtime = zipSize * ((CyberShake) getApp()).getRuntimeFactor() / ((CyberShake) getApp()).generateDouble("ZipPSA_rate");
         addAnnotation("runtime", String.format("%.2f", runtime));
-        // TODO ADD PROPER MEMORY DEMAND  FOR THIS JOB HERE
+        // TODO GENERATE MEMORY DEMAND IN A BETTER WAY / ACCORDING TO INPUT SIZE
+        double peak_memory =((CyberShake) getApp()).generateDouble("ZipPSA_rate_memory") * ((CyberShake) getApp()).getPeak_memoryFactor();
+        addAnnotation("peak_memory", String.format("%.2f", peak_memory));
     }
 }
