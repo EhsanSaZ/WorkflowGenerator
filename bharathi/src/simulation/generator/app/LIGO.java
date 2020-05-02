@@ -22,6 +22,7 @@ public class LIGO extends AbstractApplication {
     private static final double OVERLAP_FACTOR = 1.05;
     private static final int MAX_TRIES = 100;
     private double runtimeFactor = 1;
+    private double peak_memoryFactor = 1;
     private int[] topDown;
     private int bnCount;
     private int totalEdges;
@@ -35,7 +36,8 @@ public class LIGO extends AbstractApplication {
                 "\n--data | -d Approximate size of input data." +
                 "\n--factor | -f Avg. runtime to execute an TmpltBank job." +
                 "\n--help | -h Print help message." +
-                "\n--numjobs | -n Number of jobs.";
+                "\n--numjobs | -n Number of jobs." +
+                "\n--memory | -m Avg. peak memory to execute a TmpltBank job.";
 
         System.out.println(msg);
         System.exit(exitCode);
@@ -44,21 +46,24 @@ public class LIGO extends AbstractApplication {
     public double getRuntimeFactor() {
         return this.runtimeFactor;
     }
+    public  double getPeak_memoryFactor() { return this.peak_memoryFactor; }
 
     @Override
     protected void processArgs(String[] args) {
         int c;
-        LongOpt[] longopts = new LongOpt[4];
+        LongOpt[] longopts = new LongOpt[5];
 
         longopts[0] = new LongOpt("data", LongOpt.REQUIRED_ARGUMENT, null, 'd');
         longopts[1] = new LongOpt("factor", LongOpt.REQUIRED_ARGUMENT, null, 'f');
         longopts[2] = new LongOpt("help", LongOpt.NO_ARGUMENT, null, 'h');
         longopts[3] = new LongOpt("numjobs", LongOpt.REQUIRED_ARGUMENT, null, 'n');
+        longopts[4] = new LongOpt("memory", LongOpt.REQUIRED_ARGUMENT, null, 'm');
 
-        Getopt g = new Getopt("Genome", args, "d:f:hn:", longopts);
+        Getopt g = new Getopt("Genome", args, "d:f:hn:m:", longopts);
         g.setOpterr(false);
         
         double factor = 1.0;
+        double memory_factor = 1.0;
         int numJobs = 0;
         long data = 0;
 
@@ -76,6 +81,10 @@ public class LIGO extends AbstractApplication {
                     break;
                 case 'n':
                     numJobs = Integer.parseInt(g.getOptarg());
+                    break;
+                case 'm':
+                    memory_factor = Double.parseDouble(g.getOptarg());
+                    this.peak_memoryFactor = memory_factor / generateDouble("TmltBank_mean_memory");
                     break;
                 default:
                     usage(1);
@@ -329,7 +338,8 @@ public class LIGO extends AbstractApplication {
         this.distributions.put("TRIGBANK.xml", Distribution.getTruncatedNormalDistribution(12779.67, 137597136.79));
 
         /*
-         * Runtime stuff.
+         * Runtime stuff
+         * from paper Characterization of Scientific Workflows.
          */
         this.distributions.put("TmpltBank", Distribution.getTruncatedNormalDistribution(18.14, 0.18));
         this.distributions.put("TmltBank_mean", Distribution.getConstantDistribution(18.14));
@@ -337,7 +347,15 @@ public class LIGO extends AbstractApplication {
         this.distributions.put("Thinca", Distribution.getTruncatedNormalDistribution(5.37, 0.06));
         this.distributions.put("TrigBank", Distribution.getTruncatedNormalDistribution(5.11, 0.1));
 
-        // TODO ADD REQUIRED DISTRIBUTIONS FOR MEMORY DEMAND HERE
+        /*
+         * Memory stuff
+         * from paper Characterizing and profiling scientific workflows
+         */
+        this.distributions.put("TmpltBank_memory", Distribution.getTruncatedNormalDistribution(0, 0));
+        this.distributions.put("TmltBank_mean_memory", Distribution.getTruncatedNormalDistribution(0, 0));
+        this.distributions.put("Inspiral_memory", Distribution.getTruncatedNormalDistribution(0, 0));
+        this.distributions.put("Thinca_memory", Distribution.getTruncatedNormalDistribution(0, 0));
+        this.distributions.put("TrigBank_memory", Distribution.getTruncatedNormalDistribution(0, 0));
     }
 }
 
@@ -368,9 +386,9 @@ class TmpltBank extends AppJob {
         super(ligo, LIGO.namespace, name, version, jobID);
         this.setLevel(0);
         double runtime = ligo.generateDouble("TmpltBank") * ligo.getRuntimeFactor();
-        addAnnotation("runtime",
-                String.format("%.2f", runtime));
-        // TODO ADD PROPER MEMORY DEMAND  FOR THIS JOB HERE
+        addAnnotation("runtime", String.format("%.2f", runtime));
+        double peak_memory = ligo.generateDouble("TmpltBank_memory") * ligo.getPeak_memoryFactor();
+        addAnnotation("peak_memory", String.format("%.2f", peak_memory));
     }
 
     public void addInputs(Set<AppFilename> inputs) {
@@ -400,9 +418,9 @@ class Inspiral extends AppJob {
         input(String.format("HL-INJECTIONS_100-%d-%d.xml", INJECTION_KEY1, INJECTION_KEY2),
                 ligo.generateInt("INJECTION.xml"));
         double runtime = ligo.generateDouble("Inspiral") * ligo.getRuntimeFactor();
-        addAnnotation("runtime",
-                String.format("%.2f", runtime));
-        // TODO ADD PROPER MEMORY DEMAND  FOR THIS JOB HERE
+        addAnnotation("runtime", String.format("%.2f", runtime));
+        double peak_memory = ligo.generateDouble("Inspiral_memory") * ligo.getPeak_memoryFactor();
+        addAnnotation("peak_memory", String.format("%.2f", peak_memory));
     }
 
     public void addInputs(Set<AppFilename> inputs) {
@@ -432,9 +450,9 @@ class Thinca extends AppJob {
         super(ligo, LIGO.namespace, name, version, jobID);
         this.setLevel(level);
         double runtime = ligo.generateDouble("Thinca") * ligo.getRuntimeFactor();
-        addAnnotation("runtime",
-                String.format("%.2f", runtime));
-        // TODO ADD PROPER MEMORY DEMAND  FOR THIS JOB HERE
+        addAnnotation("runtime", String.format("%.2f", runtime));
+        double peak_memory = ligo.generateDouble("Thinca_memory") * ligo.getPeak_memoryFactor();
+        addAnnotation("peak_memory", String.format("%.2f", peak_memory));
     }
 
     private void generateOutput(AppJob child) {
@@ -477,9 +495,10 @@ class TrigBank extends AppJob {
         super(ligo, LIGO.namespace, name, version, jobID);
         this.setLevel(3);
         double runtime = ligo.generateDouble("TrigBank") * ligo.getRuntimeFactor();
-        addAnnotation("runtime",
-                String.format("%.2f", runtime * ligo.getRuntimeFactor()));
-        // TODO ADD PROPER MEMORY DEMAND  FOR THIS JOB HERE
+        addAnnotation("runtime", String.format("%.2f", runtime * ligo.getRuntimeFactor()));
+
+        double peak_memory = ligo.generateDouble("TrigBank_memory") * ligo.getPeak_memoryFactor();
+        addAnnotation("peak_memory", String.format("%.2f", peak_memory));
     }
 
     @Override
