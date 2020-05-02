@@ -19,6 +19,7 @@ public class Genome extends AbstractApplication {
     private static int MAX_SEQUENCES = 160;
     private static final int laneFactor = 4;
     private double runtimeFactor = 1;
+    private double peak_memoryFactor = 1;
     private String expt;
     private long referenceSize;
     private int[] counts;
@@ -44,6 +45,7 @@ public class Genome extends AbstractApplication {
                 "\n--lanes | -l Number of lanes." +
                 "\n--numjobs | -n Number of jobs." +
                 "\n--sequences | -s Number of sequences." +
+                "\n--memory | -m factor to scale memory demands." +
                 "\n\nOne of the following combinations is required:" +
                 "\n-d or" + 
                 "\n-l,-s or" +
@@ -56,11 +58,12 @@ public class Genome extends AbstractApplication {
     public double getRuntimeFactor() {
         return this.runtimeFactor;
     }
+    public  double getPeak_memoryFactor() { return this.peak_memoryFactor; }
 
     @Override
     protected void processArgs(String[] args) {
         int c;
-        LongOpt[] longopts = new LongOpt[7];
+        LongOpt[] longopts = new LongOpt[8];
 
         longopts[0] = new LongOpt("data", LongOpt.REQUIRED_ARGUMENT, null, 'd');
         longopts[1] = new LongOpt("expt", LongOpt.REQUIRED_ARGUMENT, null, 'e');
@@ -69,11 +72,13 @@ public class Genome extends AbstractApplication {
         longopts[4] = new LongOpt("lanes", LongOpt.REQUIRED_ARGUMENT, null, 'l');
         longopts[5] = new LongOpt("num-jobs", LongOpt.REQUIRED_ARGUMENT, null, 'n');
         longopts[6] = new LongOpt("sequences", LongOpt.REQUIRED_ARGUMENT, null, 's');
+        longopts[7] = new LongOpt("memory", LongOpt.REQUIRED_ARGUMENT, null, 'm');
 
-        Getopt g = new Getopt("Genome", args, "d:e:f:hl:n:s:", longopts);
+        Getopt g = new Getopt("Genome", args, "d:e:f:hl:n:s:m:", longopts);
         g.setOpterr(false);
         
         double factor = 1.0;
+        double memory_factor = 1.0;
         int numJobs = 0;
         int lanes = 0;
         int sequences = 0;
@@ -103,6 +108,9 @@ public class Genome extends AbstractApplication {
                 case 's':
                     sequences = Integer.parseInt(g.getOptarg());
                     break;
+                case 'm':
+                    memory_factor = Double.parseDouble(g.getOptarg());
+                    this.peak_memoryFactor = memory_factor;
 
                 default:
                     usage(1);
@@ -320,8 +328,12 @@ public class Genome extends AbstractApplication {
     protected void populateDistributions() {
         this.distributions.put("sfq", Distribution.getTruncatedNormalDistribution(351024865.91, 21874201834298820.00));
         this.distributions.put("sfq_mean", Distribution.getConstantDistribution(351024865.91));
-        this.distributions.put("fastQSplit_rate",
-                Distribution.getTruncatedNormalDistribution(7663927.38, 5641093085489.23));
+
+        /*
+         * Runtime stuff
+         * from paper ???
+         */
+        this.distributions.put("fastQSplit_rate", Distribution.getTruncatedNormalDistribution(7663927.38, 5641093085489.23));
         this.distributions.put("filterContams_rate", Distribution.getTruncatedNormalDistribution(8474776.63, 25021537629225.05));
         this.distributions.put("sol2sanger_factor", Distribution.getTruncatedNormalDistribution(1.32, 0.1));
         this.distributions.put("sol2sanger_rate", Distribution.getTruncatedNormalDistribution(15073990.10, 12645616180851.43));
@@ -336,7 +348,20 @@ public class Genome extends AbstractApplication {
         this.distributions.put("pileup_factor", Distribution.getUniformDistribution(0.0, 10.0));
         this.distributions.put("pileup_rate", Distribution.getTruncatedNormalDistribution(881356.45, 8956444331.45));
 
+        /*
+         * Memory stuff
+         * from paper Characterizing and profiling scientific workflows
+         */
         // TODO ADD REQUIRED DISTRIBUTIONS FOR MEMORY DEMAND HERE
+        // TODO USE A PROPER MEMORY DIST FOR ALL TASKS
+        this.distributions.put("fastQSplit_rate_memory", Distribution.getTruncatedNormalDistribution(0, 0));
+        this.distributions.put("filterContams_rate_memory", Distribution.getTruncatedNormalDistribution(0, 0));
+        this.distributions.put("sol2sanger_rate_memory", Distribution.getTruncatedNormalDistribution(0, 0));
+        this.distributions.put("fast2bfq_rate_memory", Distribution.getTruncatedNormalDistribution(0, 0));
+        this.distributions.put("maqmap_rate_memory", Distribution.getTruncatedNormalDistribution(0, 0));
+        this.distributions.put("mapMerge_rate_memory", Distribution.getTruncatedNormalDistribution(0, 0));
+        this.distributions.put("maqIndex_rate_memory", Distribution.getTruncatedNormalDistribution(0, 0));
+        this.distributions.put("pileup_rate_memory", Distribution.getTruncatedNormalDistribution(0, 0));
     }
 }
 
@@ -360,7 +385,9 @@ class FastQSplit extends AppJob {
         double runtime = size / rate;
         addAnnotation("runtime", String.format("%.2f",
                 runtime * genome.getRuntimeFactor()));
-        // TODO ADD PROPER MEMORY DEMAND  FOR THIS JOB HERE
+        // TODO GENERATE MEMORY DEMAND IN A BETTER WAY / ACCORDING TO INPUT SIZE
+        double peak_memory = genome.generateDouble("fastQSplit_rate_memory") * genome.getPeak_memoryFactor();
+        addAnnotation("peak_memory", String.format("%.2f", peak_memory));
     }
 
     @Override
@@ -399,7 +426,9 @@ class FilterContams extends AppJob {
 
         double runtime = in.getSize() / ((Genome) getApp()).generateDouble("filterContams_rate");
         addAnnotation("runtime", String.format("%.2f", runtime * ((Genome) getApp()).getRuntimeFactor()));
-        // TODO ADD PROPER MEMORY DEMAND  FOR THIS JOB HERE
+        // TODO GENERATE MEMORY DEMAND IN A BETTER WAY / ACCORDING TO INPUT SIZE
+        double peak_memory =((Genome) getApp()).generateDouble("filterContams_rate_memory") * ((Genome) getApp()).getPeak_memoryFactor();
+        addAnnotation("peak_memory", String.format("%.2f", peak_memory));
     }
 }
 
@@ -424,7 +453,9 @@ class Sol2Sanger extends AppJob {
 
         double runtime = in.getSize() / ((Genome) getApp()).generateDouble("sol2sanger_rate");
         addAnnotation("runtime", String.format("%.2f", runtime * ((Genome) getApp()).getRuntimeFactor()));
-        // TODO ADD PROPER MEMORY DEMAND  FOR THIS JOB HERE
+        // TODO GENERATE MEMORY DEMAND IN A BETTER WAY / ACCORDING TO INPUT SIZE
+        double peak_memory =((Genome) getApp()).generateDouble("sol2sanger_rate_memory") * ((Genome) getApp()).getPeak_memoryFactor();
+        addAnnotation("peak_memory", String.format("%.2f", peak_memory));
     }
 }
 
@@ -450,7 +481,9 @@ class Fast2Bfq extends AppJob {
 
         double runtime = in.getSize() / ((Genome) getApp()).generateDouble("fast2bfq_rate");
         addAnnotation("runtime", String.format("%.2f", runtime * ((Genome) getApp()).getRuntimeFactor()));
-        // TODO ADD PROPER MEMORY DEMAND  FOR THIS JOB HERE
+        // TODO GENERATE MEMORY DEMAND IN A BETTER WAY / ACCORDING TO INPUT SIZE
+        double peak_memory =((Genome) getApp()).generateDouble("fast2bfq_rate_memory") * ((Genome) getApp()).getPeak_memoryFactor();
+        addAnnotation("peak_memory", String.format("%.2f", peak_memory));
     }
 }
 
@@ -483,7 +516,9 @@ class MaqMap extends AppJob {
         double runtime = ((Genome) getApp()).getReferenceSize() / ((Genome) getApp()).generateDouble("maqmap_rate");
 
         addAnnotation("runtime", String.format("%.2f", runtime * ((Genome) getApp()).getRuntimeFactor()));
-        // TODO ADD PROPER MEMORY DEMAND  FOR THIS JOB HERE
+        // TODO GENERATE MEMORY DEMAND IN A BETTER WAY / ACCORDING TO INPUT SIZE
+        double peak_memory =((Genome) getApp()).generateDouble("maqmap_rate_memory") * ((Genome) getApp()).getPeak_memoryFactor();
+        addAnnotation("peak_memory", String.format("%.2f", peak_memory));
     }
 }
 
@@ -516,7 +551,10 @@ class MapMerge extends AppJob {
 
         double runtime = totalSize / ((Genome) getApp()).generateDouble("mapMerge_rate");
         addAnnotation("runtime", String.format("%.2f", runtime * ((Genome) getApp()).getRuntimeFactor()));
-        // TODO ADD PROPER MEMORY DEMAND  FOR THIS JOB HERE
+        // TODO GENERATE MEMORY DEMAND IN A BETTER WAY / ACCORDING TO INPUT SIZE
+        double peak_memory =((Genome) getApp()).generateDouble("mapMerge_rate_memory") * ((Genome) getApp()).getPeak_memoryFactor();
+        addAnnotation("peak_memory", String.format("%.2f", peak_memory));
+
     }
 }
 
@@ -542,7 +580,9 @@ class MaqIndex extends AppJob {
 
         double runtime = size / ((Genome) getApp()).generateDouble("maqIndex_rate");
         addAnnotation("runtime", String.format("%.2f", runtime * ((Genome) getApp()).getRuntimeFactor()));
-        // TODO ADD PROPER MEMORY DEMAND  FOR THIS JOB HERE
+        // TODO GENERATE MEMORY DEMAND IN A BETTER WAY / ACCORDING TO INPUT SIZE
+        double peak_memory =((Genome) getApp()).generateDouble("maqIndex_rate_memory") * ((Genome) getApp()).getPeak_memoryFactor();
+        addAnnotation("peak_memory", String.format("%.2f", peak_memory));
     }
 }
 
@@ -573,6 +613,8 @@ class PileUp extends AppJob {
 
         double runtime = ((Genome) getApp()).getReferenceSize() / ((Genome) getApp()).generateDouble("pileup_rate");
         addAnnotation("runtime", String.format("%.2f", runtime * ((Genome) getApp()).getRuntimeFactor()));
-        // TODO ADD PROPER MEMORY DEMAND  FOR THIS JOB HERE
+        // TODO GENERATE MEMORY DEMAND IN A BETTER WAY / ACCORDING TO INPUT SIZE
+        double peak_memory =((Genome) getApp()).generateDouble("pileup_rate_memory") * ((Genome) getApp()).getPeak_memoryFactor();
+        addAnnotation("peak_memory", String.format("%.2f", peak_memory));
     }
 }
