@@ -145,6 +145,7 @@ public class SIPHT extends AbstractApplication {
          * Memory stuff
          * from paper Characterizing and profiling scientific workflows
          */
+        // TODO ADD REQUIRED DISTRIBUTIONS FOR MEMORY DEMAND HERE
         this.distributions.put("Findterm_memory", Distribution.getTruncatedNormalDistribution(0, 0));
         this.distributions.put("Findterm_mean_memory", Distribution.getConstantDistribution(0));
         this.distributions.put("RNAMotif_memory", Distribution.getTruncatedNormalDistribution(0, 0));
