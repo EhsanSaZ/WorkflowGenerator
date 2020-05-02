@@ -24,6 +24,7 @@ public class Montage extends AbstractApplication {
     private double factor = 4.0;
     private double degree;
     private double runtimeFactor = 1;
+    private double peak_memoryFactor = 1;
     private int numProj;
     private int numDiff;
     private static double DEFAULT_PROBABILITY = 0.05;
@@ -48,16 +49,18 @@ public class Montage extends AbstractApplication {
     public double getRuntimeFactor() {
         return this.runtimeFactor;
     }
+    public  double getPeak_memoryFactor() { return this.peak_memoryFactor; }
 
     private void usage(int exitCode) {
         String msg = "Montage [-h] [options]" +
                 "\n--data | -d Approximate size of input data." +
-                "\n--factor | -f Avg. runtime to execute an mProject job." +
+                "\n--factor | -f Avg. runtime to execute a mProject job." +
                 "\n--help | -h Print help message." +
                 "\n--inputs | -i Number of inputs." +
                 "\n--numjobs | -n Number of jobs." +
                 "\n--overlap-probability | -p Probability any two inputs overlap." +
                 "\n--square | -s Square degree of workflow." +
+                "\n--memory | -m Avg. peak memory to execute a  a mProject job." +
                 "\n\nOne of the following combinations is required:" +
                 "\n-d or" +
                 "\n-s, -p -i or" +
@@ -70,7 +73,7 @@ public class Montage extends AbstractApplication {
     @Override
     protected void processArgs(String[] args) {
         int c;
-        LongOpt[] longopts = new LongOpt[7];
+        LongOpt[] longopts = new LongOpt[8];
 
         longopts[0] = new LongOpt("data", LongOpt.REQUIRED_ARGUMENT, null, 'd');
         longopts[1] = new LongOpt("factor", LongOpt.REQUIRED_ARGUMENT, null, 'f');
@@ -80,7 +83,9 @@ public class Montage extends AbstractApplication {
         longopts[4] = new LongOpt("inputs", LongOpt.REQUIRED_ARGUMENT, null, 'i');
         longopts[5] = new LongOpt("overlap-probability", LongOpt.REQUIRED_ARGUMENT, null, 'p');
         longopts[6] = new LongOpt("square", LongOpt.REQUIRED_ARGUMENT, null, 's');
-        Getopt g = new Getopt("AppGenerator", args, "d:f:hi:n:p:s:", longopts);
+        longopts[7] = new LongOpt("memory", LongOpt.REQUIRED_ARGUMENT, null, 'm');
+
+        Getopt g = new Getopt("AppGenerator", args, "d:f:hi:n:p:s:m:", longopts);
         g.setOpterr(false);
         
         int numJobs = 0;
@@ -121,6 +126,11 @@ public class Montage extends AbstractApplication {
 
                 case 's':
                     this.degree = Double.parseDouble(g.getOptarg());
+
+                    break;
+
+                case 'm':
+                    this.peak_memoryFactor = Double.parseDouble(g.getOptarg()) / generateDouble("mProjectPP_mean_memory");
 
                     break;
                 default:
@@ -286,6 +296,10 @@ public class Montage extends AbstractApplication {
         this.distributions.put("newcimages.tbl_base", Distribution.getTruncatedNormalDistribution(352.24, 2309.84));
         this.distributions.put("mosaic.fits", Distribution.getConstantDistribution(173465280));
 
+        /*
+         * Runtime stuff
+         * from paper Characterization of Scientific Workflows.
+         */
         this.distributions.put("mProjectPP", Distribution.getTruncatedNormalDistribution(13.59, 0.06));
         this.distributions.put("mProjectPP_mean", Distribution.getConstantDistribution(13.59));
         this.distributions.put("mDiffFit", Distribution.getTruncatedNormalDistribution(10.59, 0.01));
@@ -300,7 +314,22 @@ public class Montage extends AbstractApplication {
 
         this.distributions.put("mJPEG_rate", Distribution.getTruncatedNormalDistribution(549291.00, 3933630100.67));
 
+        /*
+         * Memory stuff
+         * from paper Characterizing and profiling scientific workflows
+         */
         // TODO ADD REQUIRED DISTRIBUTIONS FOR MEMORY DEMAND HERE
+        // TODO USE A PROPER MEMORY DIST FOR _base and _ rate TASKS
+        this.distributions.put("mProjectPP_memory", Distribution.getTruncatedNormalDistribution(0, 0));
+        this.distributions.put("mProjectPP_mean_memory", Distribution.getConstantDistribution(0));
+        this.distributions.put("mDiffFit_memory", Distribution.getTruncatedNormalDistribution(0, 0));
+        this.distributions.put("mConcatFit_base_memory", Distribution.getTruncatedNormalDistribution(0, 0));
+        this.distributions.put("mBgModel_base_memory", Distribution.getTruncatedNormalDistribution(0, 0));
+        this.distributions.put("mBackground_memory", Distribution.getTruncatedNormalDistribution(0, 0));
+        this.distributions.put("mImgTbl_base_memory", Distribution.getTruncatedNormalDistribution(0, 0));
+        this.distributions.put("mAdd_memory", Distribution.getTruncatedNormalDistribution(0, 0));
+        this.distributions.put("mShrink_memory", Distribution.getTruncatedNormalDistribution(0, 0));
+        this.distributions.put("mJPEG_rate_memory", Distribution.getTruncatedNormalDistribution(0, 0));
     }
 }
 
@@ -316,9 +345,9 @@ class MProjectPP extends AppJob {
         input(this.filename + ".fits", montage.generateLong("2mass.fits"));
 
         double runtime = montage.generateDouble("mProjectPP");
-        addAnnotation("runtime",
-                String.format("%.2f", runtime * montage.getRuntimeFactor()));
-        // TODO ADD PROPER MEMORY DEMAND  FOR THIS JOB HERE
+        addAnnotation("runtime", String.format("%.2f", runtime * montage.getRuntimeFactor()));
+        double peak_memory = montage.generateDouble("mProjectPP_memory") * montage.getPeak_memoryFactor();
+        addAnnotation("peak_memory", String.format("%.2f", peak_memory));
     }
 
     @Override
@@ -336,9 +365,10 @@ class MDiffFit extends AppJob {
         
         input("region.hdr", montage.generateLong("region.hdr"));
         double runtime = montage.generateDouble("mDiffFit");
-        addAnnotation("runtime",
-                String.format("%.2f", runtime * montage.getRuntimeFactor()));
-        // TODO ADD PROPER MEMORY DEMAND  FOR THIS JOB HERE
+        addAnnotation("runtime", String.format("%.2f", runtime * montage.getRuntimeFactor()));
+        double peak_memory = montage.generateDouble("mDiffFit_memory") * montage.getPeak_memoryFactor();
+        addAnnotation("peak_memory", String.format("%.2f", peak_memory));
+
     }
 
     @Override
@@ -359,7 +389,9 @@ class MConcatFit extends AppJob {
         input("fits_list.tbl", fitsListSize);
         double runtime = montage.generateDouble("mConcatFit_base") * montage.getNumDiff() * montage.getRuntimeFactor();
         addAnnotation("runtime", String.format("%.2f", runtime));
-        // TODO ADD PROPER MEMORY DEMAND  FOR THIS JOB HERE
+        // TODO GENERATE MEMORY DEMAND IN A BETTER WAY / ACCORDING TO INPUT SIZE
+        double peak_memory = montage.generateDouble("mConcatFit_base_memory") * montage.getNumDiff() * montage.getPeak_memoryFactor();
+        addAnnotation("peak_memory", String.format("%.2f", peak_memory));
     }
 
     @Override
@@ -379,7 +411,9 @@ class MBgModel extends AppJob {
 
         double runtime = montage.generateDouble("mBgModel_base") * montage.getNumDiff() * montage.getRuntimeFactor();
         addAnnotation("runtime", String.format("%.2f", runtime));
-        // TODO ADD PROPER MEMORY DEMAND  FOR THIS JOB HERE
+        // TODO GENERATE MEMORY DEMAND IN A BETTER WAY / ACCORDING TO INPUT SIZE
+        double peak_memory = montage.generateDouble("mBgModel_base_memory") * montage.getNumDiff() * montage.getPeak_memoryFactor();
+        addAnnotation("peak_memory", String.format("%.2f", peak_memory));
     }
 
     @Override
@@ -396,9 +430,9 @@ class MBackground extends AppJob {
     public MBackground(Montage montage, String name, String version, String jobID) {
         super(montage, Montage.namespace, name, version, jobID);
         double runtime = montage.generateDouble("mBackground");
-        addAnnotation("runtime",
-                String.format("%.2f", runtime * montage.getRuntimeFactor()));
-        // TODO ADD PROPER MEMORY DEMAND  FOR THIS JOB HERE
+        addAnnotation("runtime", String.format("%.2f", runtime * montage.getRuntimeFactor()));
+        double peak_memory = montage.generateDouble("mBackground_memory") * montage.getPeak_memoryFactor();
+        addAnnotation("peak_memory", String.format("%.2f", peak_memory));
     }
 
     @Override
@@ -425,7 +459,9 @@ class MImgTbl extends AppJob {
 
         double runtime = montage.generateDouble("mImgTbl_base") * montage.getNumProj() * montage.getRuntimeFactor();
         addAnnotation("runtime", String.format("%.2f", runtime));
-        // TODO ADD PROPER MEMORY DEMAND  FOR THIS JOB HERE
+        // TODO GENERATE MEMORY DEMAND IN A BETTER WAY / ACCORDING TO INPUT SIZE
+        double peak_memory = montage.generateDouble("mImgTbl_base_memory") * montage.getNumProj() * montage.getPeak_memoryFactor();
+        addAnnotation("peak_memory", String.format("%.2f", peak_memory));
     }
 
     @Override
@@ -445,7 +481,10 @@ class MAdd extends AppJob {
 
         double runtime = montage.generateDouble("mAdd") * montage.getDegree() * montage.getDegree();
         addAnnotation("runtime", String.format("%.2f", runtime * montage.getRuntimeFactor()));
-        // TODO ADD PROPER MEMORY DEMAND  FOR THIS JOB HERE
+        // TODO GENERATE MEMORY DEMAND IN A BETTER WAY / ACCORDING TO INPUT SIZE
+        double peak_memory = montage.generateDouble("mAdd_memory") * montage.getDegree() * montage.getDegree();
+        addAnnotation("peak_memory", String.format("%.2f", peak_memory * montage.getPeak_memoryFactor()));
+
         input("region.hdr", montage.generateLong("region.hdr"));
         this.jobID = jobID;
 
@@ -470,7 +509,9 @@ class MShrink extends AppJob {
 
         double runtime = montage.generateDouble("mShrink") * montage.getDegree();
         addAnnotation("runtime", String.format("%.2f", runtime * montage.getRuntimeFactor()));
-        // TODO ADD PROPER MEMORY DEMAND  FOR THIS JOB HERE
+        // TODO GENERATE MEMORY DEMAND IN A BETTER WAY / ACCORDING TO INPUT SIZE
+        double peak_memory = montage.generateDouble("mShrink_memory") * montage.getDegree() ;
+        addAnnotation("peak_memory", String.format("%.2f", peak_memory * montage.getPeak_memoryFactor()));
         this.jobID = jobID;
     }
 
@@ -510,7 +551,9 @@ class MJPEG extends AppJob {
 
                 double runtime = jpgSize / ((Montage) getApp()).generateDouble("mJPEG_rate");
                 addAnnotation("runtime", String.format("%.2f", runtime * ((Montage) getApp()).getRuntimeFactor()));
-                // TODO ADD PROPER MEMORY DEMAND  FOR THIS JOB HERE
+                // TODO GENERATE MEMORY DEMAND IN A BETTER WAY / ACCORDING TO INPUT SIZE
+                double peak_memory =((Montage) getApp()).generateDouble("mJPEG_rate_memory") * ((Montage) getApp()).getPeak_memoryFactor();
+                addAnnotation("peak_memory", String.format("%.2f", peak_memory));
                 break;
             }
         }
