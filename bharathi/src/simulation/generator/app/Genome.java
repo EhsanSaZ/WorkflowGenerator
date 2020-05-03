@@ -354,14 +354,14 @@ public class Genome extends AbstractApplication {
          */
         // TODO ADD REQUIRED DISTRIBUTIONS FOR MEMORY DEMAND HERE
         // TODO USE A PROPER MEMORY DIST FOR ALL TASKS
-        this.distributions.put("fastQSplit_rate_memory", Distribution.getTruncatedNormalDistribution(0, 0));
-        this.distributions.put("filterContams_rate_memory", Distribution.getTruncatedNormalDistribution(0, 0));
-        this.distributions.put("sol2sanger_rate_memory", Distribution.getTruncatedNormalDistribution(0, 0));
-        this.distributions.put("fast2bfq_rate_memory", Distribution.getTruncatedNormalDistribution(0, 0));
-        this.distributions.put("maqmap_rate_memory", Distribution.getTruncatedNormalDistribution(0, 0));
-        this.distributions.put("mapMerge_rate_memory", Distribution.getTruncatedNormalDistribution(0, 0));
-        this.distributions.put("maqIndex_rate_memory", Distribution.getTruncatedNormalDistribution(0, 0));
-        this.distributions.put("pileup_rate_memory", Distribution.getTruncatedNormalDistribution(0, 0));
+        this.distributions.put("fastQSplit_rate_memory", Distribution.getTruncatedNormalDistribution(2.80, 0.01));
+        this.distributions.put("filterContams_rate_memory", Distribution.getTruncatedNormalDistribution(2.97, 0.0036));
+        this.distributions.put("sol2sanger_rate_memory", Distribution.getTruncatedNormalDistribution(3.79, 0.01));
+        this.distributions.put("fast2bfq_rate_memory", Distribution.getTruncatedNormalDistribution(4.05, 0.0001));
+        this.distributions.put("maqmap_rate_memory", Distribution.getTruncatedNormalDistribution(196.04, 30.25));
+        this.distributions.put("mapMerge_rate_memory", Distribution.getTruncatedNormalDistribution(5.00,0.1521));
+        this.distributions.put("maqIndex_rate_memory", Distribution.getTruncatedNormalDistribution(6.17, 0.01));
+        this.distributions.put("pileup_rate_memory", Distribution.getTruncatedNormalDistribution(148.26, 0.01));
     }
 }
 
