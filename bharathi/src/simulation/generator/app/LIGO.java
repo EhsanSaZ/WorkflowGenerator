@@ -352,11 +352,11 @@ public class LIGO extends AbstractApplication {
          * from paper Characterizing and profiling scientific workflows
          */
         // TODO ADD REQUIRED DISTRIBUTIONS FOR MEMORY DEMAND HERE
-        this.distributions.put("TmpltBank_memory", Distribution.getTruncatedNormalDistribution(0, 0));
-        this.distributions.put("TmltBank_mean_memory", Distribution.getTruncatedNormalDistribution(0, 0));
-        this.distributions.put("Inspiral_memory", Distribution.getTruncatedNormalDistribution(0, 0));
-        this.distributions.put("Thinca_memory", Distribution.getTruncatedNormalDistribution(0, 0));
-        this.distributions.put("TrigBank_memory", Distribution.getTruncatedNormalDistribution(0, 0));
+        this.distributions.put("TmpltBank_memory", Distribution.getTruncatedNormalDistribution(404.54, 0.0004));
+        this.distributions.put("TmltBank_mean_memory", Distribution.getConstantDistribution(404.54));
+        this.distributions.put("Inspiral_memory", Distribution.getTruncatedNormalDistribution(533.17, 13521.0384));
+        this.distributions.put("Thinca_memory", Distribution.getTruncatedNormalDistribution(2.63, 0.6889));
+        this.distributions.put("TrigBank_memory", Distribution.getTruncatedNormalDistribution(2.04, 0.0196));
     }
 }
 
