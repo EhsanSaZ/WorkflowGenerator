@@ -241,7 +241,7 @@ public class CyberShake extends AbstractApplication {
 //        this.distributions.put("ZipSeis_rate_memory", Distribution.getConstantDistribution(0));
 //        this.distributions.put("ZipPSA_rate_memory", Distribution.getConstantDistribution(0));
         this.distributions.put("ZipSeis_rate_memory", Distribution.getTruncatedNormalDistribution(6.25, 0.0256));
-        this.distributions.put("ZipPSA_rate_memory",  Distribution.getTruncatedNormalDistribution(6.16, 0.0256‬));
+        this.distributions.put("ZipPSA_rate_memory",  Distribution.getTruncatedNormalDistribution(6.16, 0.0256));
     }
 }
 
