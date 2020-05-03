@@ -320,16 +320,16 @@ public class Montage extends AbstractApplication {
          */
         // TODO ADD REQUIRED DISTRIBUTIONS FOR MEMORY DEMAND HERE
         // TODO USE A PROPER MEMORY DIST FOR _base and _ rate TASKS
-        this.distributions.put("mProjectPP_memory", Distribution.getTruncatedNormalDistribution(0, 0));
-        this.distributions.put("mProjectPP_mean_memory", Distribution.getConstantDistribution(0));
-        this.distributions.put("mDiffFit_memory", Distribution.getTruncatedNormalDistribution(0, 0));
-        this.distributions.put("mConcatFit_base_memory", Distribution.getTruncatedNormalDistribution(0, 0));
-        this.distributions.put("mBgModel_base_memory", Distribution.getTruncatedNormalDistribution(0, 0));
-        this.distributions.put("mBackground_memory", Distribution.getTruncatedNormalDistribution(0, 0));
-        this.distributions.put("mImgTbl_base_memory", Distribution.getTruncatedNormalDistribution(0, 0));
-        this.distributions.put("mAdd_memory", Distribution.getTruncatedNormalDistribution(0, 0));
-        this.distributions.put("mShrink_memory", Distribution.getTruncatedNormalDistribution(0, 0));
-        this.distributions.put("mJPEG_rate_memory", Distribution.getTruncatedNormalDistribution(0, 0));
+        this.distributions.put("mProjectPP_memory", Distribution.getTruncatedNormalDistribution(11.81, 0.1024));
+        this.distributions.put("mProjectPP_mean_memory", Distribution.getConstantDistribution(11.81));
+        this.distributions.put("mDiffFit_memory", Distribution.getTruncatedNormalDistribution(5.76, 0.4489));
+        this.distributions.put("mConcatFit_base_memory", Distribution.getTruncatedNormalDistribution(8.13, 0.01));
+        this.distributions.put("mBgModel_base_memory", Distribution.getTruncatedNormalDistribution(13.64, 0.01));
+        this.distributions.put("mBackground_memory", Distribution.getTruncatedNormalDistribution(16.19, 0.1024));
+        this.distributions.put("mImgTbl_base_memory", Distribution.getTruncatedNormalDistribution(8.06, 0.1156));
+        this.distributions.put("mAdd_memory", Distribution.getTruncatedNormalDistribution(16.04, 3.0625));
+        this.distributions.put("mShrink_memory", Distribution.getTruncatedNormalDistribution(4.62, 0.0009));
+        this.distributions.put("mJPEG_rate_memory", Distribution.getTruncatedNormalDistribution(3.96, 0.01));
     }
 }
 
@@ -390,7 +390,8 @@ class MConcatFit extends AppJob {
         double runtime = montage.generateDouble("mConcatFit_base") * montage.getNumDiff() * montage.getRuntimeFactor();
         addAnnotation("runtime", String.format("%.2f", runtime));
         // TODO GENERATE MEMORY DEMAND IN A BETTER WAY / ACCORDING TO INPUT SIZE
-        double peak_memory = montage.generateDouble("mConcatFit_base_memory") * montage.getNumDiff() * montage.getPeak_memoryFactor();
+//        double peak_memory = montage.generateDouble("mConcatFit_base_memory") * montage.getNumDiff() * montage.getPeak_memoryFactor();
+        double peak_memory = montage.generateDouble("mConcatFit_base_memory")  * montage.getPeak_memoryFactor();
         addAnnotation("peak_memory", String.format("%.2f", peak_memory));
     }
 
@@ -412,7 +413,8 @@ class MBgModel extends AppJob {
         double runtime = montage.generateDouble("mBgModel_base") * montage.getNumDiff() * montage.getRuntimeFactor();
         addAnnotation("runtime", String.format("%.2f", runtime));
         // TODO GENERATE MEMORY DEMAND IN A BETTER WAY / ACCORDING TO INPUT SIZE
-        double peak_memory = montage.generateDouble("mBgModel_base_memory") * montage.getNumDiff() * montage.getPeak_memoryFactor();
+//        double peak_memory = montage.generateDouble("mBgModel_base_memory") * montage.getNumDiff() * montage.getPeak_memoryFactor();
+        double peak_memory = montage.generateDouble("mBgModel_base_memory") * montage.getPeak_memoryFactor();
         addAnnotation("peak_memory", String.format("%.2f", peak_memory));
     }
 
@@ -460,7 +462,8 @@ class MImgTbl extends AppJob {
         double runtime = montage.generateDouble("mImgTbl_base") * montage.getNumProj() * montage.getRuntimeFactor();
         addAnnotation("runtime", String.format("%.2f", runtime));
         // TODO GENERATE MEMORY DEMAND IN A BETTER WAY / ACCORDING TO INPUT SIZE
-        double peak_memory = montage.generateDouble("mImgTbl_base_memory") * montage.getNumProj() * montage.getPeak_memoryFactor();
+//        double peak_memory = montage.generateDouble("mImgTbl_base_memory") * montage.getNumProj() * montage.getPeak_memoryFactor();
+        double peak_memory = montage.generateDouble("mImgTbl_base_memory") * montage.getPeak_memoryFactor();
         addAnnotation("peak_memory", String.format("%.2f", peak_memory));
     }
 
@@ -482,7 +485,8 @@ class MAdd extends AppJob {
         double runtime = montage.generateDouble("mAdd") * montage.getDegree() * montage.getDegree();
         addAnnotation("runtime", String.format("%.2f", runtime * montage.getRuntimeFactor()));
         // TODO GENERATE MEMORY DEMAND IN A BETTER WAY / ACCORDING TO INPUT SIZE
-        double peak_memory = montage.generateDouble("mAdd_memory") * montage.getDegree() * montage.getDegree();
+//        double peak_memory = montage.generateDouble("mAdd_memory") * montage.getDegree() * montage.getDegree();
+        double peak_memory = montage.generateDouble("mAdd_memory");
         addAnnotation("peak_memory", String.format("%.2f", peak_memory * montage.getPeak_memoryFactor()));
 
         input("region.hdr", montage.generateLong("region.hdr"));
@@ -510,7 +514,8 @@ class MShrink extends AppJob {
         double runtime = montage.generateDouble("mShrink") * montage.getDegree();
         addAnnotation("runtime", String.format("%.2f", runtime * montage.getRuntimeFactor()));
         // TODO GENERATE MEMORY DEMAND IN A BETTER WAY / ACCORDING TO INPUT SIZE
-        double peak_memory = montage.generateDouble("mShrink_memory") * montage.getDegree() ;
+//        double peak_memory = montage.generateDouble("mShrink_memory") * montage.getDegree() ;
+        double peak_memory = montage.generateDouble("mShrink_memory") ;
         addAnnotation("peak_memory", String.format("%.2f", peak_memory * montage.getPeak_memoryFactor()));
         this.jobID = jobID;
     }
