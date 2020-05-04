@@ -147,20 +147,20 @@ public class SIPHT extends AbstractApplication {
          */
         // TODO ADD REQUIRED DISTRIBUTIONS FOR MEMORY DEMAND HERE
         // MAYBE IT MUST BE USED CONSTANT FOR ALL DIST
-        this.distributions.put("Findterm_memory", Distribution.getTruncatedNormalDistribution(58.21, 0.01));
-        this.distributions.put("Findterm_mean_memory", Distribution.getConstantDistribution(58.21));
-        this.distributions.put("RNAMotif_memory", Distribution.getTruncatedNormalDistribution(4.38, 0.01));
-        this.distributions.put("Transterm_memory", Distribution.getTruncatedNormalDistribution(16.03, 0.01));
-        this.distributions.put("Blast_memory", Distribution.getTruncatedNormalDistribution(116.38, 0.01));
-        this.distributions.put("Patser_memory", Distribution.getTruncatedNormalDistribution(4.48, 0.01));
-        this.distributions.put("Patser_concate_memory", Distribution.getTruncatedNormalDistribution(2.29, 0.01));
-        this.distributions.put("SRNA_memory", Distribution.getTruncatedNormalDistribution(5.65, 0.01));
-        this.distributions.put("FFN_parse_memory", Distribution.getTruncatedNormalDistribution(5.00, 0.01));
-        this.distributions.put("Blast_candidate_memory", Distribution.getTruncatedNormalDistribution(13.28, 0.01));
-        this.distributions.put("Blast_QRNA_memory", Distribution.getTruncatedNormalDistribution(115.21, 0.01));
-        this.distributions.put("Blast_synteny_memory", Distribution.getConstantDistribution(14.18));
-        this.distributions.put("SRNA_annotate_memory", Distribution.getTruncatedNormalDistribution(6.95, 0.01));
-        this.distributions.put("Blast_paralogues_memory", Distribution.getTruncatedNormalDistribution(13.34, 0.01));
+        this.distributions.put("Findterm_memory", Distribution.getTruncatedNormalDistribution(61037608.96, 109951162.77));
+        this.distributions.put("Findterm_mean_memory", Distribution.getConstantDistribution(61037608.96));
+        this.distributions.put("RNAMotif_memory", Distribution.getTruncatedNormalDistribution(4592762.88, 109951162.77));
+        this.distributions.put("Transterm_memory", Distribution.getTruncatedNormalDistribution(16808673.28, 109951162.77));
+        this.distributions.put("Blast_memory", Distribution.getTruncatedNormalDistribution(122033274.88, 109951162.77));
+        this.distributions.put("Patser_memory", Distribution.getTruncatedNormalDistribution(4697620.48, 109951162.77));
+        this.distributions.put("Patser_concate_memory", Distribution.getTruncatedNormalDistribution(2401239.04, 109951162.77));
+        this.distributions.put("SRNA_memory", Distribution.getTruncatedNormalDistribution(5830082.56, 109951162.77));
+        this.distributions.put("FFN_parse_memory", Distribution.getTruncatedNormalDistribution(5242880.00, 109951162.77));
+        this.distributions.put("Blast_candidate_memory", Distribution.getTruncatedNormalDistribution(13925089.28, 109951162.77));
+        this.distributions.put("Blast_QRNA_memory", Distribution.getTruncatedNormalDistribution(120806440.96, 109951162.77));
+        this.distributions.put("Blast_synteny_memory", Distribution.getConstantDistribution(14868807.68));
+        this.distributions.put("SRNA_annotate_memory", Distribution.getTruncatedNormalDistribution(7287603.20, 109951162.77));
+        this.distributions.put("Blast_paralogues_memory", Distribution.getTruncatedNormalDistribution(13988003.84, 109951162.77));
     }
 
     private void usage(int exitCode) {

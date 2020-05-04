@@ -235,13 +235,13 @@ public class CyberShake extends AbstractApplication {
          * from paper Characterizing and profiling scientific workflows
          */
         // TODO ADD REQUIRED DISTRIBUTIONS FOR MEMORY DEMAND HERE
-        this.distributions.put("ExtractSGT_memory", Distribution.getTruncatedNormalDistribution(20.64, 0.4096));
-        this.distributions.put("SeismogramSynthesis_memory", Distribution.getTruncatedNormalDistribution(817.59, 233781.9201));
-        this.distributions.put("PeakValCalcOkaya_memory", Distribution.getTruncatedNormalDistribution(3.11, 0.0001));
+        this.distributions.put("ExtractSGT_memory", Distribution.getTruncatedNormalDistribution(21642608.64, 450359962737.04));
+        this.distributions.put("SeismogramSynthesis_memory", Distribution.getTruncatedNormalDistribution(857305251.84, 257045939513749772.69));
+        this.distributions.put("PeakValCalcOkaya_memory", Distribution.getTruncatedNormalDistribution(3261071.36, 109951162.77));
 //        this.distributions.put("ZipSeis_rate_memory", Distribution.getConstantDistribution(0));
 //        this.distributions.put("ZipPSA_rate_memory", Distribution.getConstantDistribution(0));
-        this.distributions.put("ZipSeis_rate_memory", Distribution.getTruncatedNormalDistribution(6.25, 0.0256));
-        this.distributions.put("ZipPSA_rate_memory",  Distribution.getTruncatedNormalDistribution(6.16, 0.0256));
+        this.distributions.put("ZipSeis_rate_memory", Distribution.getTruncatedNormalDistribution(6553600.0, 28147497671.06));
+        this.distributions.put("ZipPSA_rate_memory",  Distribution.getTruncatedNormalDistribution(6459228.16, 28147497671.06));
     }
 }
 

@@ -320,16 +320,16 @@ public class Montage extends AbstractApplication {
          */
         // TODO ADD REQUIRED DISTRIBUTIONS FOR MEMORY DEMAND HERE
         // TODO USE A PROPER MEMORY DIST FOR _base and _ rate TASKS
-        this.distributions.put("mProjectPP_memory", Distribution.getTruncatedNormalDistribution(11.81, 0.1024));
-        this.distributions.put("mProjectPP_mean_memory", Distribution.getConstantDistribution(11.81));
-        this.distributions.put("mDiffFit_memory", Distribution.getTruncatedNormalDistribution(5.76, 0.4489));
-        this.distributions.put("mConcatFit_base_memory", Distribution.getTruncatedNormalDistribution(8.13, 0.01));
-        this.distributions.put("mBgModel_base_memory", Distribution.getTruncatedNormalDistribution(13.64, 0.01));
-        this.distributions.put("mBackground_memory", Distribution.getTruncatedNormalDistribution(16.19, 0.1024));
-        this.distributions.put("mImgTbl_base_memory", Distribution.getTruncatedNormalDistribution(8.06, 0.1156));
-        this.distributions.put("mAdd_memory", Distribution.getTruncatedNormalDistribution(16.04, 3.0625));
-        this.distributions.put("mShrink_memory", Distribution.getTruncatedNormalDistribution(4.62, 0.0009));
-        this.distributions.put("mJPEG_rate_memory", Distribution.getTruncatedNormalDistribution(3.96, 0.01));
+        this.distributions.put("mProjectPP_memory", Distribution.getTruncatedNormalDistribution(12383682.56, 112589990684.26));
+        this.distributions.put("mProjectPP_mean_memory", Distribution.getConstantDistribution(12383682.56));
+        this.distributions.put("mDiffFit_memory", Distribution.getTruncatedNormalDistribution(6039797.76, 493570769708.64));
+        this.distributions.put("mConcatFit_base_memory", Distribution.getTruncatedNormalDistribution(8524922.88, 109951162.77));
+        this.distributions.put("mBgModel_base_memory", Distribution.getTruncatedNormalDistribution(14302576.64, 109951162.77));
+        this.distributions.put("mBackground_memory", Distribution.getTruncatedNormalDistribution(16976445.44, 112589990684.26));
+        this.distributions.put("mImgTbl_base_memory", Distribution.getTruncatedNormalDistribution(8451522.56, 127103544170.90));
+        this.distributions.put("mAdd_memory", Distribution.getTruncatedNormalDistribution(16819159.04, 3.0625));
+        this.distributions.put("mShrink_memory", Distribution.getTruncatedNormalDistribution(4844421.12, 989560464.99));
+        this.distributions.put("mJPEG_rate_memory", Distribution.getTruncatedNormalDistribution(4152360.96, 109951162.77));
     }
 }
 
